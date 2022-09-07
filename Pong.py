@@ -14,6 +14,7 @@ from pygame.time import Clock, get_ticks
 from pygame.event import get as get_events
 from pygame.draw import circle as draw_circle
 from pygame.draw import rect as draw_rect
+from pygame.draw import lines as draw_lines
 from pygame.key import get_pressed
 
 # User-defined functions
@@ -36,11 +37,12 @@ class Game:
         self._frame_rate = 90  # larger is faster game
         self._close_selected = False
         self._clock = Clock()
-        self._small_dot = Dot('red', [50,75], 15, [1,2], self._window)
+        self._small_dot = Dot('white', [50,75], 10, [1,2], self._window)
         self._left_pad = Pad('white', [30,150], [20,110], 5, self._window)
         self._right_pad = Pad('white', [455,150], [20,110], 5, self._window)
         self._small_dot.randomize()
-        self._score = 0
+        self._score_left = 0
+        self._score_right = 0
         self._continue_game = True
         
     def _adjust_window(self):
@@ -99,6 +101,7 @@ class Game:
         
         self._window.clear()
         self.draw_score()
+        draw_lines(self._window.get_surface(), Color('white'), False, [(245,0), (245,400)])
         self._small_dot.draw()
         self._left_pad.draw()
         self._right_pad.draw()
@@ -116,8 +119,11 @@ class Game:
             # update during game
             self._small_dot.intersects(self._left_pad, 1)
             self._small_dot.intersects(self._right_pad, 0)
-            self._small_dot.move()
-            self._score = get_ticks() // 1000 
+            position = self._small_dot.move()
+            if position > 250:
+                self._score_left += 1
+            elif position > -1:
+                self._score_right += 1
         self._clock.tick(self._frame_rate)
         
 
@@ -143,8 +149,12 @@ class Game:
         # Draw the time since the game began as a score.
         # - self is the Game to draw for.
         
-        string = 'Score: ' + str(self._score)
-        self._window.draw_string(string, 0, 0)
+        string_l = str(self._score_left)
+        string_width = self._window.get_string_width(string_l)
+        self._window.draw_string(string_l, 220 - string_width, 0)
+        
+        string_r = str(self._score_right)
+        self._window.draw_string(string_r, 270, 0)
 
 class Dot:
     # An object in this class represents a colored circle
@@ -179,6 +189,9 @@ class Dot:
             if (self._center[index] < self._radius) or (self._center[index] + self._radius > size[index]):
                 # change direction
                 self._velocity[index] = - self._velocity[index]
+                if index == 0:
+                    return self._center[index]
+        return -1
 
     def draw(self):
         # Draw the dot on the surface.

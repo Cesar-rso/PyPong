@@ -120,7 +120,7 @@ class Game:
             self._small_dot.intersects(self._left_pad, 1)
             self._small_dot.intersects(self._right_pad, 0)
             position = self._small_dot.move()
-            if position > 250:
+            if position > (self._window.get_width() / 2):
                 self._score_left += 1
             elif position > -1:
                 self._score_right += 1
@@ -151,10 +151,10 @@ class Game:
         
         string_l = str(self._score_left)
         string_width = self._window.get_string_width(string_l)
-        self._window.draw_string(string_l, 220 - string_width, 0)
+        self._window.draw_string(string_l, (self._window.get_width() / 2) - 30 - string_width, 0)
         
         string_r = str(self._score_right)
-        self._window.draw_string(string_r, 270, 0)
+        self._window.draw_string(string_r, (self._window.get_width() / 2) + 20, 0)
 
 class Dot:
     # An object in this class represents a colored circle
@@ -259,10 +259,12 @@ class Pad:
     # - self is the Pad
     
         if direction == 1:
-            self._start_pos[1] += self._velocity
+            if (self._start_pos[1] + self._end_pos[1]) < self._window.get_height():
+                self._start_pos[1] += self._velocity
             
         if direction == 0:
-            self._start_pos[1] -= self._velocity
+            if self._start_pos[1] > 0:
+                self._start_pos[1] -= self._velocity
     
 
 main()
